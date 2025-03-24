@@ -39,13 +39,18 @@ const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
 
+// Hardcode the pay contract address mapping
+const TOKEN_TO_CONTRACT_MAP: Record<string, string> = {
+  "0x9987eb3623FAC93b15F772A93D57198003a9d7E0": "0x86532277f4Be07b93f58eB876040e6E7De451BAb" // USDF to its pay contract
+};
+
 export default function CreateScholarship() {
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     amount: "",
-    token: "0x9987eb3623FAC93b15F772A93D57198003a9d7E0", // USDF (Mock token)
+    tokenAddress: "0x9987eb3623FAC93b15F772A93D57198003a9d7E0", // USDF (Mock token)
     duration: "",
     maxAwardees: "",
   });
@@ -54,6 +59,7 @@ export default function CreateScholarship() {
 
   // Get the addScholarship function from the store
   const addScholarship = useScholarshipStore((state) => state.addScholarship);
+  const hasActiveScholarship = useScholarshipStore((state) => state.hasActiveScholarship);
 
   const account = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
@@ -121,8 +127,9 @@ export default function CreateScholarship() {
     }
   };
 
+  // Update token handling if needed
   const handleTokenChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, token: value }));
+    setFormData((prev) => ({ ...prev, tokenAddress: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,6 +137,12 @@ export default function CreateScholarship() {
 
     if (!account.address) {
       toast.error("Please connect your wallet first");
+      return;
+    }
+
+    // Check if the user already has an active scholarship
+    if (hasActiveScholarship(account.address)) {
+      toast.error("You already have an active scholarship. Only one active scholarship is allowed per wallet address.");
       return;
     }
 
@@ -141,18 +154,30 @@ export default function CreateScholarship() {
       const duration = parseFloat(formData.duration);
       const streamRate = amount / duration;
 
+      // Find the pay contract for the selected token
+      const payContractAddress = TOKEN_TO_CONTRACT_MAP[formData.tokenAddress] || "";
+      
+      if (!payContractAddress) {
+        toast.error("No payment contract found for the selected token");
+        setIsCreating(false);
+        return;
+      }
+
       // Create scholarship object to store
       const scholarship: Scholarship = {
         id: generateId(),
         name: formData.name,
         description: formData.description,
         amount: formData.amount,
-        token: formData.token,
+        tokenAddress: formData.tokenAddress,
         tokenSymbol: "USDF", // Hardcoded for now, could be dynamic based on token selection
         duration: formData.duration,
         maxAwardees: formData.maxAwardees,
         streamRate: streamRate.toFixed(2),
         createdAt: Date.now(),
+        donorAddress: account.address,
+        payContractAddress: payContractAddress,
+        isActive: true
       };
 
       // Call the factory contract to create a new scholarship stream
@@ -160,7 +185,7 @@ export default function CreateScholarship() {
         address: FACTORY_ADDRESS,
         abi: factoryAbi,
         functionName: "createPayContract",
-        args: [formData.token],
+        args: [formData.tokenAddress],
       });
 
       // Store the scholarship data with localStorage via Zustand
@@ -238,7 +263,7 @@ export default function CreateScholarship() {
                       onChange={handleInputChange}
                     />
                     <Select
-                      defaultValue={formData.token}
+                      defaultValue={formData.tokenAddress}
                       onValueChange={handleTokenChange}
                     >
                       <SelectTrigger className="w-[120px]">
