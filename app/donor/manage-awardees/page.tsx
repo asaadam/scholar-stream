@@ -1,36 +1,20 @@
 "use client";
 
-import { ArrowLeft, Plus, Trash2, UserCheck, Wallet } from "lucide-react";
-import Link from "next/link";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAccount, useWriteContract } from "wagmi";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useTokenInfo } from "@/lib/hooks/useTokenInfo";
-import {
-  Awardee,
-  Scholarship,
-  useAwardeeStore,
-} from "@/lib/store";
-import { usePayContracts } from "@/lib/hooks/usePayContracts";
-import { DepositModal } from "@/components/DepositModal";
 import { AddAwardeeModal } from "@/components/AddAwardeeModal";
+import { DepositModal } from "@/components/DepositModal";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
+import { useTokenInfo } from "@/lib/hooks/useTokenInfo";
+import { Awardee, Scholarship, useAwardeeStore } from "@/lib/store";
+import { AwardeesTable } from "./components/AwardeesTable";
+import { PayContracts } from "./components/PayContracts";
+import { ScholarshipHeader } from "./components/ScholarshipHeader";
 
 // Import contract ABIs
 import payContractAbi from "@/abi/payContract.json";
@@ -51,8 +35,8 @@ export default function ManageAwardees() {
   // Create a hardcoded scholarship with all required properties
   const hardcodedScholarship: Scholarship = {
     id: "scholarship-123",
-    name: "Hardcoded Scholarship",
-    description: "A hardcoded scholarship for demonstration purposes",
+    name: "Scholarship",
+    description: "Scholarship for demonstration purposes",
     amount: "10000",
     duration: "12",
     maxAwardees: "10",
@@ -85,13 +69,11 @@ export default function ManageAwardees() {
   const [showDepositModal, setShowDepositModal] = useState(false);
 
   // Fetch available pay contracts
-  const { payContracts } = usePayContracts();
-
+  const { data: payContracts } = usePayContracts();
   // Find the current pay contract and token details from the fetched data
-  const currentPayContract = payContracts.find(
-    (contract) =>
-      contract.id.toLowerCase() ===
-      scholarship.payContractAddress.toLowerCase()
+  const currentPayContract = payContracts?.find(
+    (contract: PayContract) =>
+      contract.id.toLowerCase() === scholarship.payContractAddress.toLowerCase()
   );
 
   // If we found the contract in our GraphQL data, use that token info
@@ -221,73 +203,28 @@ export default function ManageAwardees() {
     }/month`;
   };
 
-  const formatBalance = () => {
-    return `${parseFloat(tokenInfo.formattedBalance || "0").toFixed(2)} ${
-      tokenInfo.symbol ||
-      tokenDetails?.symbol ||
-      scholarship.tokenSymbol ||
-      "USDC"
-    }`;
-  };
+  const tokenSymbol =
+    tokenInfo.symbol ||
+    tokenDetails?.symbol ||
+    scholarship.tokenSymbol ||
+    "USDC";
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center">
-        <Link href="/donor">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </Link>
+      <ScholarshipHeader
+        scholarship={scholarship}
+        tokenSymbol={tokenSymbol}
+        onDepositClick={() => setShowDepositModal(true)}
+      />
+
+      <div className="my-4">
+        <h2 className="text-xl font-semibold mb-4">Available Pay Contracts</h2>
+        <PayContracts />
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Manage Awardees</CardTitle>
-              <CardDescription>
-                {scholarship.name} - {scholarship.amount}{" "}
-                {tokenInfo.symbol ||
-                  tokenDetails?.symbol ||
-                  scholarship.tokenSymbol}{" "}
-                over {scholarship.duration} months
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowDepositModal(true)}
-              className="flex items-center gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              Deposit Funds
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Card className="p-4 bg-muted/50">
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">
-                    Contract Balance:
-                  </span>
-                  <span className="text-xl font-bold">{formatBalance()}</span>
-                </div>
-              </Card>
-              <Card className="p-4 bg-muted/50">
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">
-                    Active Awardees:
-                  </span>
-                  <span className="text-xl font-bold">
-                    {awardees.filter((a) => a.status === "Active").length} /{" "}
-                    {scholarship.maxAwardees}
-                  </span>
-                </div>
-              </Card>
-            </div>
-
             <div className="flex justify-end">
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -296,69 +233,13 @@ export default function ManageAwardees() {
             </div>
           </div>
 
-          {awardees.length === 0 ? (
-            <div className="rounded-md border border-dashed p-8 text-center">
-              <h3 className="text-md font-medium text-muted-foreground">
-                No Awardees Yet
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Use the &quot;Add Awardee&quot; button to start adding
-                scholarship recipients.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Wallet Address</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {awardees.map((awardee) => (
-                  <TableRow key={awardee.id}>
-                    <TableCell>{awardee.name}</TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {awardee.wallet.slice(0, 6)}...{awardee.wallet.slice(-4)}
-                    </TableCell>
-                    <TableCell>{formatAmountDisplay(awardee)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          awardee.status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {awardee.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => toggleAwardeeStatus(awardee)}
-                        >
-                          <UserCheck className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeAwardee(awardee)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <AwardeesTable
+            awardees={awardees}
+            tokenSymbol={tokenSymbol}
+            onToggleStatus={toggleAwardeeStatus}
+            onRemove={removeAwardee}
+            formatAmountDisplay={formatAmountDisplay}
+          />
 
           {/* Add AddAwardeeModal */}
           <AddAwardeeModal
@@ -366,14 +247,8 @@ export default function ManageAwardees() {
             onOpenChange={setShowAddDialog}
             scholarshipId={scholarship.id}
             tokenAddress={scholarship.tokenAddress as `0x${string}`}
-            tokenSymbol={
-              tokenInfo.symbol ||
-              tokenDetails?.symbol ||
-              scholarship.tokenSymbol
-            }
-            payContractAddress={
-              scholarship.payContractAddress as `0x${string}`
-            }
+            tokenSymbol={tokenSymbol}
+            payContractAddress={scholarship.payContractAddress as `0x${string}`}
             onAwardeeAdded={handleAwardeeAdded}
           />
 
@@ -382,14 +257,8 @@ export default function ManageAwardees() {
             open={showDepositModal}
             onOpenChange={setShowDepositModal}
             tokenAddress={scholarship.tokenAddress as `0x${string}`}
-            tokenSymbol={
-              tokenInfo.symbol ||
-              tokenDetails?.symbol ||
-              scholarship.tokenSymbol
-            }
-            payContractAddress={
-              scholarship.payContractAddress as `0x${string}`
-            }
+            tokenSymbol={tokenSymbol}
+            payContractAddress={scholarship.payContractAddress as `0x${string}`}
             onDepositSuccess={refetchBalance}
           />
         </CardContent>

@@ -64,7 +64,8 @@ export function AddAwardeeModal({
   );
 
   // Fetch available pay contracts
-  const { payContracts, isLoading: isLoadingContracts } = usePayContracts();
+  const { data: payContracts, isLoading: isLoadingContracts } =
+    usePayContracts();
 
   // Contract interaction
   const { writeContractAsync } = useWriteContract();
@@ -88,7 +89,7 @@ export function AddAwardeeModal({
   useEffect(() => {
     if (open && tokenAddress && payContractAddress && payContracts.length > 0) {
       const contract = payContracts.find(
-        (c) =>
+        (c: PayContract) =>
           c.token.id.toLowerCase() === tokenAddress.toLowerCase() &&
           c.id.toLowerCase() === payContractAddress.toLowerCase()
       );
@@ -156,7 +157,9 @@ export function AddAwardeeModal({
   }, [amount, timePeriod]);
 
   const handleTokenChange = (contractId: string) => {
-    const contract = payContracts.find((c) => c.id === contractId);
+    const contract = payContracts?.find(
+      (c: PayContract) => c.id === contractId
+    );
     if (contract) {
       setSelectedContract(contract);
       setAmount("");
@@ -317,7 +320,7 @@ export function AddAwardeeModal({
                     <SelectValue placeholder="Select token" />
                   </SelectTrigger>
                   <SelectContent>
-                    {payContracts.map((contract) => (
+                    {payContracts.map((contract: PayContract) => (
                       <SelectItem key={contract.id} value={contract.id}>
                         {contract.token.symbol} - {contract.token.name}
                       </SelectItem>

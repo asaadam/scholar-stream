@@ -33,7 +33,6 @@ export default function RootLayout({
         <Providers>
           <SiteHeader />
           <Toaster />
-
           {children}
         </Providers>
       </body>

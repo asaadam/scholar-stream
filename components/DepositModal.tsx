@@ -48,7 +48,8 @@ export function DepositModal({
   );
 
   // Fetch available pay contracts
-  const { payContracts, isLoading: isLoadingContracts } = usePayContracts();
+  const { data: payContracts, isLoading: isLoadingContracts } =
+    usePayContracts();
 
   // Get user's token balance for the selected token
   const { formattedBalance, parseAmount, refetchBalance } = useUserTokenBalance(
@@ -62,7 +63,7 @@ export function DepositModal({
   useEffect(() => {
     if (open && tokenAddress && payContractAddress && payContracts.length > 0) {
       const contract = payContracts.find(
-        (c) =>
+        (c: PayContract) =>
           c.token.id.toLowerCase() === tokenAddress.toLowerCase() &&
           c.id.toLowerCase() === payContractAddress.toLowerCase()
       );
@@ -87,7 +88,9 @@ export function DepositModal({
   }, [open]);
 
   const handleTokenChange = (contractId: string) => {
-    const contract = payContracts.find((c) => c.id === contractId);
+    const contract = payContracts?.find(
+      (c: PayContract) => c.id === contractId
+    );
     if (contract) {
       setSelectedContract(contract);
       // Reset amount when changing tokens
@@ -203,7 +206,7 @@ export function DepositModal({
                 <SelectValue placeholder="Select a token" />
               </SelectTrigger>
               <SelectContent>
-                {payContracts.map((contract) => (
+                {payContracts.map((contract: PayContract) => (
                   <SelectItem key={contract.id} value={contract.id}>
                     {contract.token.symbol} - {contract.token.name}
                   </SelectItem>
