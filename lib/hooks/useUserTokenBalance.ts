@@ -14,6 +14,7 @@ export function useUserTokenBalance(tokenAddress?: `0x${string}`) {
     functionName: "decimals",
     query: {
       enabled: !!tokenAddress,
+      refetchOnMount: true,
     },
   });
 
@@ -25,8 +26,15 @@ export function useUserTokenBalance(tokenAddress?: `0x${string}`) {
     args: account.address ? [account.address] : undefined,
     query: {
       enabled: !!tokenAddress && !!account.address,
+      refetchOnMount: true,
     },
   });
+
+  // Reset state when tokenAddress changes
+  useEffect(() => {
+    setFormattedBalance("0");
+    setTokenDecimals(18);
+  }, [tokenAddress]);
 
   // Update token decimals
   useEffect(() => {
