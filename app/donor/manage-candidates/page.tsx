@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { ArrowLeft, Check, Eye, X } from "lucide-react"
 import { useAccount } from "wagmi"
@@ -41,7 +41,8 @@ interface Candidate {
   documents: string[];
 }
 
-export default function ManageCandidates() {
+// Create a client component that uses useSearchParams
+function ManageCandidatesContent() {
   const account = useAccount()
   const searchParams = useSearchParams()
   const scholarshipId = searchParams.get("id")
@@ -437,6 +438,15 @@ export default function ManageCandidates() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+// Main page component
+export default function ManageCandidates() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading...</div>}>
+      <ManageCandidatesContent />
+    </Suspense>
   )
 }
 
