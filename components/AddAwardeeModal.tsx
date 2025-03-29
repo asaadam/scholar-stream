@@ -33,6 +33,7 @@ import { usePayContracts, PayContract } from "@/lib/hooks/usePayContracts";
 import { Awardee } from "@/lib/store";
 import payContractAbi from "@/abi/payContract.json";
 import { parseUnits, formatUnits } from "viem";
+import { useStreams } from "@/lib/hooks/useStreams";
 
 interface AddAwardeeModalProps {
   open: boolean;
@@ -172,6 +173,8 @@ export function AddAwardeeModal({
     return parseUnits(value, selectedContract.token.decimals);
   };
 
+  const { addAwardeeOptimistically } = useStreams();
+
   const handleAddAwardee = async () => {
     if (
       !selectedContract ||
@@ -190,14 +193,6 @@ export function AddAwardeeModal({
       // Parse amount per second with the correct decimals
       const amountPerSecWei = parseAmount(amountPerSec);
 
-      // Call createStream on the payment contract
-      await writeContractAsync({
-        address: selectedContract.id as `0x${string}`,
-        abi: payContractAbi,
-        functionName: "createStream",
-        args: [newAwardeeWallet, amountPerSecWei],
-      });
-
       // Create the new awardee record
       const newAwardee: Awardee = {
         id: uuidv4(),
@@ -209,16 +204,25 @@ export function AddAwardeeModal({
         status: "Active",
       };
 
+      // Optimistically add the awardee to the cache
+      addAwardeeOptimistically(newAwardee);
+
+      // Call createStream on the payment contract
+      await writeContractAsync({
+        address: selectedContract.id as `0x${string}`,
+        abi: payContractAbi,
+        functionName: "createStream",
+        args: [newAwardeeWallet, amountPerSecWei],
+      });
+
       // Call the callback
       onAwardeeAdded(newAwardee);
 
-      // Reset form
+      // Reset form and close dialog
       setNewAwardeeWallet("");
       setNewAwardeeName("");
       setAmount("");
       setTimePeriod("month");
-
-      // Close dialog
       onOpenChange(false);
 
       // Refresh balance

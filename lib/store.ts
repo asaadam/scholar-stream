@@ -48,6 +48,23 @@ interface AwardeeState {
   getAwardeeByWallet: (scholarshipId: string, wallet: string) => Awardee | undefined;
 }
 
+export interface Stream {
+  awardee: string;
+  status: "Active" | "Paused";
+  amountPerSec: string;
+  name: string;
+  amountReceived?: string;
+}
+
+export interface StreamsState {
+  streams: Record<string, Stream[]>; // key is payer address
+  addStream: (payerAddress: string, stream: Stream) => void;
+  updateStream: (payerAddress: string, awardeeAddress: string, updates: Partial<Stream>) => void;
+  removeStream: (payerAddress: string, awardeeAddress: string) => void;
+  getStreams: (payerAddress: string) => Stream[];
+  getStream: (payerAddress: string, awardeeAddress: string) => Stream | undefined;
+}
+
 export const useScholarshipStore = create<ScholarshipState>()(
   persist(
     (set, get) => ({
@@ -139,4 +156,56 @@ export const useAwardeeStore = create<AwardeeState>()(
       name: 'awardee-storage',
     }
   )
-) 
+)
+
+export const useStreamsStore = create<StreamsState>()(
+  persist(
+    (set, get) => ({
+      streams: {},
+      
+      addStream: (payerAddress, stream) => {
+        set((state) => ({
+          streams: {
+            ...state.streams,
+            [payerAddress]: [...(state.streams[payerAddress] || []), stream],
+          },
+        }));
+      },
+
+      updateStream: (payerAddress, awardeeAddress, updates) => {
+        set((state) => ({
+          streams: {
+            ...state.streams,
+            [payerAddress]: (state.streams[payerAddress] || []).map((stream) =>
+              stream.awardee === awardeeAddress ? { ...stream, ...updates } : stream
+            ),
+          },
+        }));
+      },
+
+      removeStream: (payerAddress, awardeeAddress) => {
+        set((state) => ({
+          streams: {
+            ...state.streams,
+            [payerAddress]: (state.streams[payerAddress] || []).filter(
+              (stream) => stream.awardee !== awardeeAddress
+            ),
+          },
+        }));
+      },
+
+      getStreams: (payerAddress) => {
+        return get().streams[payerAddress] || [];
+      },
+
+      getStream: (payerAddress, awardeeAddress) => {
+        return get().streams[payerAddress]?.find(
+          (stream) => stream.awardee === awardeeAddress
+        );
+      },
+    }),
+    {
+      name: 'streams-storage',
+    }
+  )
+); 

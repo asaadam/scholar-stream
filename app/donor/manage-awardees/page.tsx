@@ -195,7 +195,8 @@ export default function ManageAwardees() {
   const formatAmountDisplay = (awardee: Awardee) => {
     const amountPerSec = parseFloat(awardee.amountPerSec);
     const amountPerMonth = amountPerSec * 30 * 24 * 60 * 60;
-    return `${amountPerMonth.toFixed(2)} ${
+    const decimals = tokenInfo.decimals || tokenDetails?.decimals || 18;
+    return `${(amountPerMonth / Math.pow(10, decimals)).toFixed(2)} ${
       tokenInfo.symbol ||
       tokenDetails?.symbol ||
       scholarship.tokenSymbol ||
@@ -234,11 +235,11 @@ export default function ManageAwardees() {
           </div>
 
           <AwardeesTable
-            awardees={awardees}
             tokenSymbol={tokenSymbol}
             onToggleStatus={toggleAwardeeStatus}
             onRemove={removeAwardee}
             formatAmountDisplay={formatAmountDisplay}
+            tokenDecimals={tokenInfo.decimals || tokenDetails?.decimals || 18}
           />
 
           {/* Add AddAwardeeModal */}
@@ -247,7 +248,6 @@ export default function ManageAwardees() {
             onOpenChange={setShowAddDialog}
             scholarshipId={scholarship.id}
             tokenAddress={scholarship.tokenAddress as `0x${string}`}
-            tokenSymbol={tokenSymbol}
             payContractAddress={scholarship.payContractAddress as `0x${string}`}
             onAwardeeAdded={handleAwardeeAdded}
           />
@@ -257,7 +257,6 @@ export default function ManageAwardees() {
             open={showDepositModal}
             onOpenChange={setShowDepositModal}
             tokenAddress={scholarship.tokenAddress as `0x${string}`}
-            tokenSymbol={tokenSymbol}
             payContractAddress={scholarship.payContractAddress as `0x${string}`}
             onDepositSuccess={refetchBalance}
           />

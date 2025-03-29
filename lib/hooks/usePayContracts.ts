@@ -100,7 +100,6 @@ export function usePayContractBalances() {
   const { address } = useAccount();
 
   const contracts = payContracts || [];
-  console.log(contracts);
   const { data: balances, isLoading: isLoadingBalances } = useReadContracts({
     contracts: contracts.map((contract: PayContract) => ({
       address: contract.id as `0x${string}`,
