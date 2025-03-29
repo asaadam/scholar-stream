@@ -1,5 +1,4 @@
 import { Trash2, UserCheck } from "lucide-react";
-import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStreams } from "@/lib/hooks/useStreams";
-import { Awardee, Stream, useStreamsStore } from "@/lib/store";
-import { calculateStreamAmount, calculateAmountPerMs } from "@/lib/utils/streamCalculations";
+import { Awardee, Stream } from "@/lib/store";
+import {
+  calculateAmountPerMs,
+  calculateStreamAmount,
+} from "@/lib/utils/streamCalculations";
 
 interface AwardeesTableProps {
   tokenSymbol: string;
@@ -38,7 +40,7 @@ function StreamRow({
   formatAmountDisplay: (awardee: Awardee) => string;
   tokenDecimals: number;
 }) {
-  const [currentAmount, setCurrentAmount] = useState(() => 
+  const [currentAmount, setCurrentAmount] = useState(() =>
     calculateStreamAmount({
       startTimestamp: stream.startTimestamp,
       amountPerSec: stream.amountPerSec,
@@ -87,12 +89,12 @@ function StreamRow({
       <TableCell>
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            stream.status === "Active"
+            stream.status.toLowerCase() === "active"
               ? "bg-green-100 text-green-800"
               : "bg-yellow-100 text-yellow-800"
           }`}
         >
-          {stream.status}
+          {stream.status.toUpperCase()}
         </span>
       </TableCell>
       <TableCell>
@@ -144,14 +146,11 @@ export function AwardeesTable({
   formatAmountDisplay,
   tokenDecimals,
 }: AwardeesTableProps) {
-  const { address } = useAccount();
-  const { isLoading, error } = useStreams();
+  const { isLoading, error, data: streams } = useStreams();
 
-  const streams = useStreamsStore.getState().getStreams(address || "");
-  console.log(streams);
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading awardees</div>;
-  if (!streams || streams.length === 0) {
+  if (!streams || streams.data.streams.items.length === 0) {
     return (
       <div className="rounded-md border border-dashed p-8 text-center">
         <h3 className="text-md font-medium text-muted-foreground">
@@ -177,7 +176,7 @@ export function AwardeesTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {streams.map((stream: Stream) => (
+        {streams.data.streams.items.map((stream: Stream) => (
           <StreamRow
             key={stream.awardee}
             stream={stream}

@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,10 +33,9 @@ import {
 } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
 
-import { usePayContracts, PayContract } from "@/lib/hooks/usePayContracts";
-import { Awardee } from "@/lib/store";
 import payContractAbi from "@/abi/payContract.json";
-import { parseUnits, formatUnits } from "viem";
+import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
+import { formatUnits, parseUnits } from "viem";
 import { useStreams } from "@/lib/hooks/useStreams";
 
 interface AddAwardeeModalProps {
@@ -42,16 +45,13 @@ interface AddAwardeeModalProps {
   tokenAddress?: `0x${string}`;
   tokenSymbol?: string;
   payContractAddress?: `0x${string}`;
-  onAwardeeAdded: (awardee: Awardee) => void;
 }
 
 export function AddAwardeeModal({
   open,
   onOpenChange,
-  scholarshipId,
   tokenAddress,
   payContractAddress,
-  onAwardeeAdded,
 }: AddAwardeeModalProps) {
   const account = useAccount();
   const [newAwardeeWallet, setNewAwardeeWallet] = useState("");
@@ -63,13 +63,17 @@ export function AddAwardeeModal({
   const [selectedContract, setSelectedContract] = useState<PayContract | null>(
     null
   );
+  const { refetch: refetchStreams } = useStreams();
 
   // Fetch available pay contracts
   const { data: payContracts, isLoading: isLoadingContracts } =
     usePayContracts();
 
   // Contract interaction
-  const { writeContractAsync } = useWriteContract();
+  const { writeContractAsync, data: writeContractData } = useWriteContract();
+  const { status } = useWaitForTransactionReceipt({
+    hash: writeContractData,
+  });
 
   // Read contract balance
   const { data: contractBalanceData, refetch: refetchBalance } =
@@ -157,6 +161,13 @@ export function AddAwardeeModal({
     setAmountPerSec(perSec.toString());
   }, [amount, timePeriod]);
 
+  useEffect(() => {
+    if (status === "success") {
+      console.log("success, refetching streams");
+      refetchStreams();
+    }
+  }, [status, refetchStreams]);
+
   const handleTokenChange = (contractId: string) => {
     const contract = payContracts?.find(
       (c: PayContract) => c.id === contractId
@@ -173,8 +184,6 @@ export function AddAwardeeModal({
     return parseUnits(value, selectedContract.token.decimals);
   };
 
-  const { addAwardeeOptimistically } = useStreams();
-
   const handleAddAwardee = async () => {
     if (
       !selectedContract ||
@@ -190,23 +199,7 @@ export function AddAwardeeModal({
     setIsAddingAwardee(true);
 
     try {
-      // Parse amount per second with the correct decimals
       const amountPerSecWei = parseAmount(amountPerSec);
-
-      // Create the new awardee record
-      const newAwardee: Awardee = {
-        id: uuidv4(),
-        name: newAwardeeName,
-        wallet: newAwardeeWallet,
-        scholarshipId: scholarshipId,
-        amountPerSec: amountPerSec,
-        createdAt: Date.now(),
-        status: "Active",
-      };
-
-      // Optimistically add the awardee to the cache
-
-      // Call createStream on the payment contract
       await writeContractAsync(
         {
           address: selectedContract.id as `0x${string}`,
@@ -216,29 +209,12 @@ export function AddAwardeeModal({
         },
         {
           onSuccess: () => {
-            addAwardeeOptimistically(newAwardee);
-            setNewAwardeeWallet("");
-            setNewAwardeeName("");
-            setAmount("");
-            setTimePeriod("month");
-            onOpenChange(false);
             refetchBalance();
+            refetchStreams();
+            onOpenChange(false);
           },
         }
       );
-
-      // Call the callback
-      onAwardeeAdded(newAwardee);
-
-      // Reset form and close dialog
-      setNewAwardeeWallet("");
-      setNewAwardeeName("");
-      setAmount("");
-      setTimePeriod("month");
-      onOpenChange(false);
-
-      // Refresh balance
-      refetchBalance();
 
       toast.success("Awardee added successfully");
     } catch (error) {

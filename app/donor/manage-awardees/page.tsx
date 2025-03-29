@@ -22,8 +22,6 @@ import payContractAbi from "@/abi/payContract.json";
 export default function ManageAwardees() {
   const account = useAccount();
 
-  // Awardee store functions
-  const addAwardee = useAwardeeStore((state) => state.addAwardee);
   const updateAwardee = useAwardeeStore((state) => state.updateAwardee);
   const removeAwardeeFromStore = useAwardeeStore(
     (state) => state.removeAwardee
@@ -94,17 +92,6 @@ export default function ManageAwardees() {
       refetchBalance();
     }
   }, [scholarship, refetchBalance]);
-
-  const handleAwardeeAdded = (newAwardee: Awardee) => {
-    // Add to the store
-    addAwardee(newAwardee);
-
-    // Update local state
-    setAwardees([...awardees, newAwardee]);
-
-    // Refresh balance
-    refetchBalance();
-  };
 
   const toggleAwardeeStatus = async (awardee: Awardee) => {
     try {
@@ -249,7 +236,6 @@ export default function ManageAwardees() {
             scholarshipId={scholarship.id}
             tokenAddress={scholarship.tokenAddress as `0x${string}`}
             payContractAddress={scholarship.payContractAddress as `0x${string}`}
-            onAwardeeAdded={handleAwardeeAdded}
           />
 
           {/* Add deposit modal */}
