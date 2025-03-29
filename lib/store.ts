@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface Scholarship {
   id: string;
@@ -31,7 +31,10 @@ export interface Awardee {
 interface ScholarshipState {
   scholarships: Scholarship[];
   addScholarship: (scholarship: Scholarship) => void;
-  updateScholarship: (id: string, updatedScholarship: Partial<Scholarship>) => void;
+  updateScholarship: (
+    id: string,
+    updatedScholarship: Partial<Scholarship>
+  ) => void;
   getScholarships: () => Scholarship[];
   getScholarshipById: (id: string) => Scholarship | undefined;
   hasActiveScholarship: (address: string) => boolean;
@@ -45,7 +48,10 @@ interface AwardeeState {
   removeAwardee: (id: string) => void;
   getAwardees: () => Awardee[];
   getAwardeesByScholarship: (scholarshipId: string) => Awardee[];
-  getAwardeeByWallet: (scholarshipId: string, wallet: string) => Awardee | undefined;
+  getAwardeeByWallet: (
+    scholarshipId: string,
+    wallet: string
+  ) => Awardee | undefined;
 }
 
 export interface Stream {
@@ -54,115 +60,134 @@ export interface Stream {
   amountPerSec: string;
   name: string;
   amountReceived?: string;
+  startTimestamp: string;
+  lastWithdrawTimestamp: string;
 }
 
 export interface StreamsState {
   streams: Record<string, Stream[]>; // key is payer address
   addStream: (payerAddress: string, stream: Stream) => void;
-  updateStream: (payerAddress: string, awardeeAddress: string, updates: Partial<Stream>) => void;
+  updateStream: (
+    payerAddress: string,
+    awardeeAddress: string,
+    updates: Partial<Stream>
+  ) => void;
   removeStream: (payerAddress: string, awardeeAddress: string) => void;
   getStreams: (payerAddress: string) => Stream[];
-  getStream: (payerAddress: string, awardeeAddress: string) => Stream | undefined;
+  getStream: (
+    payerAddress: string,
+    awardeeAddress: string
+  ) => Stream | undefined;
 }
 
 export const useScholarshipStore = create<ScholarshipState>()(
   persist(
     (set, get) => ({
       scholarships: [],
-      
+
       addScholarship: (scholarship: Scholarship) => {
         set((state) => ({
-          scholarships: [...state.scholarships, scholarship]
+          scholarships: [...state.scholarships, scholarship],
         }));
       },
-      
-      updateScholarship: (id: string, updatedScholarship: Partial<Scholarship>) => {
+
+      updateScholarship: (
+        id: string,
+        updatedScholarship: Partial<Scholarship>
+      ) => {
         set((state) => ({
-          scholarships: state.scholarships.map(scholarship => 
-            scholarship.id === id ? { ...scholarship, ...updatedScholarship } : scholarship
-          )
+          scholarships: state.scholarships.map((scholarship) =>
+            scholarship.id === id
+              ? { ...scholarship, ...updatedScholarship }
+              : scholarship
+          ),
         }));
       },
-      
+
       getScholarships: () => {
         return get().scholarships;
       },
-      
+
       getScholarshipById: (id: string) => {
-        return get().scholarships.find(scholarship => scholarship.id === id);
+        return get().scholarships.find((scholarship) => scholarship.id === id);
       },
-      
+
       hasActiveScholarship: (address: string) => {
-        return get().scholarships.some(scholarship => 
-          scholarship.donorAddress?.toLowerCase() === address.toLowerCase() && 
-          scholarship.isActive
+        return get().scholarships.some(
+          (scholarship) =>
+            scholarship.donorAddress?.toLowerCase() === address.toLowerCase() &&
+            scholarship.isActive
         );
       },
-      
+
       getActiveScholarship: (address: string) => {
-        return get().scholarships.find(scholarship => 
-          scholarship.donorAddress?.toLowerCase() === address.toLowerCase() && 
-          scholarship.isActive
+        return get().scholarships.find(
+          (scholarship) =>
+            scholarship.donorAddress?.toLowerCase() === address.toLowerCase() &&
+            scholarship.isActive
         );
-      }
+      },
     }),
     {
-      name: 'scholarship-storage',
+      name: "scholarship-storage",
     }
   )
-)
+);
 
 export const useAwardeeStore = create<AwardeeState>()(
   persist(
     (set, get) => ({
       awardees: [],
-      
+
       addAwardee: (awardee: Awardee) => {
         set((state) => ({
-          awardees: [...state.awardees, awardee]
+          awardees: [...state.awardees, awardee],
         }));
       },
-      
+
       updateAwardee: (id: string, updatedAwardee: Partial<Awardee>) => {
         set((state) => ({
-          awardees: state.awardees.map(awardee => 
+          awardees: state.awardees.map((awardee) =>
             awardee.id === id ? { ...awardee, ...updatedAwardee } : awardee
-          )
+          ),
         }));
       },
-      
+
       removeAwardee: (id: string) => {
         set((state) => ({
-          awardees: state.awardees.filter(awardee => awardee.id !== id)
+          awardees: state.awardees.filter((awardee) => awardee.id !== id),
         }));
       },
-      
+
       getAwardees: () => {
         return get().awardees;
       },
-      
+
       getAwardeesByScholarship: (scholarshipId: string) => {
-        return get().awardees.filter(awardee => awardee.scholarshipId === scholarshipId);
-      },
-      
-      getAwardeeByWallet: (scholarshipId: string, wallet: string) => {
-        return get().awardees.find(awardee => 
-          awardee.scholarshipId === scholarshipId && 
-          awardee.wallet.toLowerCase() === wallet.toLowerCase()
+        return get().awardees.filter(
+          (awardee) => awardee.scholarshipId === scholarshipId
         );
-      }
+      },
+
+      getAwardeeByWallet: (scholarshipId: string, wallet: string) => {
+        return get().awardees.find(
+          (awardee) =>
+            awardee.scholarshipId === scholarshipId &&
+            awardee.wallet.toLowerCase() === wallet.toLowerCase()
+        );
+      },
     }),
     {
-      name: 'awardee-storage',
+      name: "awardee-storage",
     }
   )
-)
+);
 
 export const useStreamsStore = create<StreamsState>()(
   persist(
     (set, get) => ({
       streams: {},
-      
+
       addStream: (payerAddress, stream) => {
         set((state) => ({
           streams: {
@@ -177,7 +202,9 @@ export const useStreamsStore = create<StreamsState>()(
           streams: {
             ...state.streams,
             [payerAddress]: (state.streams[payerAddress] || []).map((stream) =>
-              stream.awardee === awardeeAddress ? { ...stream, ...updates } : stream
+              stream.awardee === awardeeAddress
+                ? { ...stream, ...updates }
+                : stream
             ),
           },
         }));
@@ -205,7 +232,7 @@ export const useStreamsStore = create<StreamsState>()(
       },
     }),
     {
-      name: 'streams-storage',
+      name: "streams-storage",
     }
   )
-); 
+);

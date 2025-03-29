@@ -10,6 +10,13 @@ interface Stream {
   amountPerSec: string;
   name: string;
   amountReceived: string;
+  startTimestamp: string;
+  lastWithdrawTimestamp: string;
+  transactions: {
+    items: {
+      hash: string;
+    }[];
+  };
 }
 
 interface StreamsResponse {
@@ -26,11 +33,18 @@ const STREAMS_QUERY = `
       payer: $payer
     }){
       items{
-        awardee
-        status
-        amountPerSec
-        amountReceived
+      transactions{
+        items{
+          hash
+        }
       }
+      awardee
+      status
+      amountPerSec
+      amountReceived
+      startTimestamp
+      lastWithdrawTimestamp
+    }
     }
   }
 `;
@@ -76,6 +90,8 @@ export function useStreams() {
             status: stream.status,
             amountPerSec: stream.amountPerSec,
             amountReceived: stream.amountReceived,
+            startTimestamp: stream.startTimestamp,
+            lastWithdrawTimestamp: stream.lastWithdrawTimestamp,
           });
         } else {
           addStream(address, {
@@ -97,6 +113,11 @@ export function useStreams() {
       amountPerSec: newAwardee.amountPerSec,
       name: newAwardee.name,
       amountReceived: "0",
+      startTimestamp: "",
+      lastWithdrawTimestamp: "",
+      transactions: {
+        items: [],
+      },
     };
 
     addStream(address, stream);

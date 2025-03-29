@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useStreams } from "@/lib/hooks/useStreams";
 import { Awardee, Stream, useStreamsStore } from "@/lib/store";
+import { calculateStreamAmount, calculateAmountPerMs } from "@/lib/utils/streamCalculations";
 
 interface AwardeesTableProps {
   tokenSymbol: string;
@@ -37,21 +38,26 @@ function StreamRow({
   formatAmountDisplay: (awardee: Awardee) => string;
   tokenDecimals: number;
 }) {
-  const [currentAmount, setCurrentAmount] = useState(
-    parseFloat(stream.amountReceived || "0")
+  const [currentAmount, setCurrentAmount] = useState(() => 
+    calculateStreamAmount({
+      startTimestamp: stream.startTimestamp,
+      amountPerSec: stream.amountPerSec,
+      amountReceived: stream.amountReceived,
+    })
   );
 
   useEffect(() => {
+    if (stream.status.toLowerCase() !== "active") return;
+
     const interval = setInterval(() => {
       setCurrentAmount((prev) => {
-        const amountPerSec = parseFloat(stream.amountPerSec);
-        const amountPerMs = amountPerSec / 1000;
+        const amountPerMs = calculateAmountPerMs(stream.amountPerSec);
         return prev + amountPerMs;
       });
     }, 1);
 
     return () => clearInterval(interval);
-  }, [stream.status, stream.amountPerSec, stream.amountReceived]);
+  }, [stream.status, stream.amountPerSec]);
 
   return (
     <TableRow key={stream.awardee}>
@@ -142,7 +148,7 @@ export function AwardeesTable({
   const { isLoading, error } = useStreams();
 
   const streams = useStreamsStore.getState().getStreams(address || "");
-
+  console.log(streams);
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading awardees</div>;
   if (!streams || streams.length === 0) {

@@ -205,15 +205,27 @@ export function AddAwardeeModal({
       };
 
       // Optimistically add the awardee to the cache
-      addAwardeeOptimistically(newAwardee);
 
       // Call createStream on the payment contract
-      await writeContractAsync({
-        address: selectedContract.id as `0x${string}`,
-        abi: payContractAbi,
-        functionName: "createStream",
-        args: [newAwardeeWallet, amountPerSecWei],
-      });
+      await writeContractAsync(
+        {
+          address: selectedContract.id as `0x${string}`,
+          abi: payContractAbi,
+          functionName: "createStream",
+          args: [newAwardeeWallet, amountPerSecWei],
+        },
+        {
+          onSuccess: () => {
+            addAwardeeOptimistically(newAwardee);
+            setNewAwardeeWallet("");
+            setNewAwardeeName("");
+            setAmount("");
+            setTimePeriod("month");
+            onOpenChange(false);
+            refetchBalance();
+          },
+        }
+      );
 
       // Call the callback
       onAwardeeAdded(newAwardee);
