@@ -37,6 +37,7 @@ import payContractAbi from "@/abi/payContract.json";
 import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
 import { formatUnits, parseUnits } from "viem";
 import { useStreams } from "@/lib/hooks/useStreams";
+import { useApplicationStore } from "@/app/store/applicationStore";
 
 interface AddAwardeeModalProps {
   open: boolean;
@@ -52,6 +53,7 @@ export function AddAwardeeModal({
   onOpenChange,
   tokenAddress,
   payContractAddress,
+  scholarshipId,
 }: AddAwardeeModalProps) {
   const account = useAccount();
   const [newAwardeeWallet, setNewAwardeeWallet] = useState("");
@@ -160,6 +162,30 @@ export function AddAwardeeModal({
 
     setAmountPerSec(perSec.toString());
   }, [amount, timePeriod]);
+
+  // New effect to pre-populate fields from application data when a scholarshipId is provided
+  useEffect(() => {
+    if (open && scholarshipId) {
+      // Get applications from the store
+      const getApplications = useApplicationStore.getState().getApplications;
+      const applications = getApplications();
+      
+      // Find the application with matching scholarshipId
+      const application = applications.find(app => app.scholarshipId === scholarshipId);
+      
+      if (application) {
+        // Pre-populate fields from application data
+        setNewAwardeeName(`${application.personalInfo.firstName} ${application.personalInfo.lastName}`);
+        setNewAwardeeWallet(application.personalInfo.walletAddress);
+        
+        // Set a default amount if needed (e.g., 100 tokens per month)
+        if (!amount) {
+          setAmount("100");
+          setTimePeriod("month");
+        }
+      }
+    }
+  }, [open, scholarshipId, amount]);
 
   useEffect(() => {
     if (status === "success") {
@@ -396,19 +422,26 @@ export function AddAwardeeModal({
           )}
         </div>
         <DialogFooter>
-          <Button
-            onClick={handleAddAwardee}
-            disabled={
-              isAddingAwardee ||
-              !newAwardeeName ||
-              !newAwardeeWallet ||
-              !amount ||
-              !amountPerSec ||
-              !selectedContract
-            }
-          >
-            {isAddingAwardee ? "Adding..." : "Add Awardee"}
-          </Button>
+          {account.address ? (
+            <Button
+              onClick={handleAddAwardee}
+              disabled={
+                isAddingAwardee ||
+                !newAwardeeName ||
+                !newAwardeeWallet ||
+                !amount ||
+                !amountPerSec ||
+                !selectedContract
+              }
+            >
+              {isAddingAwardee ? "Adding..." : "Add Awardee"}
+            </Button>
+          ) : (
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">Connect your wallet to add awardees</p>
+              <Button disabled>Add Awardee</Button>
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

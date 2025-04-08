@@ -199,6 +199,13 @@ export default function DonorPage() {
                       </Button>
                     </Link>
                     <Link
+                      href={`/donor/applicants`}
+                    >
+                      <Button variant="outline" size="sm">
+                        Review Applicants
+                      </Button>
+                    </Link>
+                    <Link
                       href={`/donor/manage-candidates?id=${activeScholarship.id}`}
                     >
                       <Button variant="outline" size="sm">

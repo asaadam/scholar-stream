@@ -43,7 +43,7 @@ export default function Home() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/donor" className="w-full">
+              <Link href="/donor/manage-awardees" className="w-full">
                 <Button className="w-full cursor-pointer">
                   Enter Donor Portal
                   <ArrowRight className="ml-2 h-4 w-4" />

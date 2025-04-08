@@ -209,7 +209,7 @@ export default function CreateScholarship() {
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center">
-          <Link href="/donor">
+          <Link href="/donor/manage-awardees">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard

@@ -1,5 +1,4 @@
-import { ArrowLeft, Wallet } from "lucide-react";
-import Link from "next/link";
+import { Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Scholarship } from "@/lib/store";
+import Link from "next/link";
 
 interface ScholarshipHeaderProps {
   scholarship: Scholarship;
@@ -23,15 +23,6 @@ export function ScholarshipHeader({
 }: ScholarshipHeaderProps) {
   return (
     <>
-      <div className="mb-6 flex items-center">
-        <Link href="/donor">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </Link>
-      </div>
-
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -42,17 +33,24 @@ export function ScholarshipHeader({
                 {scholarship.duration} months
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              onClick={onDepositClick}
-              className="flex items-center gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              Deposit Funds
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={onDepositClick}
+                className="flex items-center gap-2"
+              >
+                <Wallet className="h-4 w-4" />
+                Deposit Funds
+              </Button>
+              <Link href={`/donor/applicants`}>
+                <Button variant="outline" size="sm">
+                  Review Applicants
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardHeader>
       </Card>
     </>
   );
-} 
+}
