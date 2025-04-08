@@ -14,6 +14,9 @@ interface Stream {
   amountReceived: string;
   startTimestamp: string;
   lastWithdrawTimestamp: string;
+  payContract: {
+    id: string;
+  };
 }
 
 interface StreamsResponse {
@@ -39,6 +42,7 @@ export interface FormattedScholarship {
   startTimestamp: string;
   lastWithdrawTimestamp: string;
   amountReceived: string;
+  payContractId: string;
 }
 
 export interface Transaction {
@@ -60,6 +64,9 @@ const AWARDEE_STREAMS_QUERY = `
         amountReceived
         startTimestamp
         lastWithdrawTimestamp
+        payContract{
+        id
+      }
       }
     }
   }
@@ -93,39 +100,49 @@ export function useAwardeeStreams() {
     enabled: !!address,
   });
 
-  const streams = query.data?.data?.streams?.items.map((stream) => {
-    const totalAmount = calculateStreamAmount({
-      startTimestamp: stream.startTimestamp,
-      amountPerSec: stream.amountPerSec,
-      amountReceived: stream.amountReceived,
-    });
+  const streams =
+    query.data?.data?.streams?.items.map((stream) => {
+      const totalAmount = calculateStreamAmount({
+        startTimestamp: stream.startTimestamp,
+        amountPerSec: stream.amountPerSec,
+        amountReceived: stream.amountReceived,
+      });
 
-    const unclaimedAmount = totalAmount - parseFloat(stream.amountReceived);
+      const unclaimedAmount = totalAmount - parseFloat(stream.amountReceived);
 
-    return {
-      ...stream,
-      totalAmount,
-      unclaimedAmount,
-    };
-  }) || [];
+      return {
+        ...stream,
+        totalAmount,
+        unclaimedAmount,
+      };
+    }) || [];
 
   const scholarships: FormattedScholarship[] = streams.map((stream, index) => {
     const amountPerSecond = parseFloat(stream.amountPerSec);
     const monthlyAmount = amountPerSecond * 60 * 60 * 24 * 30;
-    
-    const formattedMonthlyAmount = `${parseFloat(formatUnits(BigInt(Math.floor(monthlyAmount)), 18)).toFixed(2)} USDC`;
-    const formattedTotalReceived = `${parseFloat(formatUnits(BigInt(stream.amountReceived), 18)).toFixed(2)} USDC`;
-    const formattedUnclaimed = `${parseFloat(formatUnits(BigInt(Math.floor(stream.unclaimedAmount)), 18)).toFixed(4)} USDC`;
-    
+
+    const formattedMonthlyAmount = `${parseFloat(
+      formatUnits(BigInt(Math.floor(monthlyAmount)), 18)
+    ).toFixed(2)} USDC`;
+    const formattedTotalReceived = `${parseFloat(
+      formatUnits(BigInt(stream.amountReceived), 18)
+    ).toFixed(2)} USDC`;
+    const formattedUnclaimed = `${parseFloat(
+      formatUnits(BigInt(Math.floor(stream.unclaimedAmount)), 18)
+    ).toFixed(4)} USDC`;
+
     const startDate = new Date(parseInt(stream.startTimestamp) * 1000);
-    const lastWithdrawDate = stream.lastWithdrawTimestamp ? 
-      new Date(parseInt(stream.lastWithdrawTimestamp) * 1000) : startDate;
-    
+    const lastWithdrawDate = stream.lastWithdrawTimestamp
+      ? new Date(parseInt(stream.lastWithdrawTimestamp) * 1000)
+      : startDate;
+
     const nextPaymentDate = new Date(lastWithdrawDate);
     nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
-    
-    const nextPayment = formatDistanceToNow(nextPaymentDate, { addSuffix: true });
-    
+
+    const nextPayment = formatDistanceToNow(nextPaymentDate, {
+      addSuffix: true,
+    });
+
     return {
       id: index + 1,
       name: `Scholarship #${index + 1}`,
@@ -141,6 +158,7 @@ export function useAwardeeStreams() {
       startTimestamp: stream.startTimestamp,
       lastWithdrawTimestamp: stream.lastWithdrawTimestamp,
       amountReceived: stream.amountReceived,
+      payContractId: stream.payContract.id,
     };
   });
 
@@ -149,8 +167,10 @@ export function useAwardeeStreams() {
     return {
       date: startDate.toLocaleDateString(),
       scholarship: `Scholarship from ${stream.payer.slice(0, 6)}...`,
-      amount: `${parseFloat(formatUnits(BigInt(stream.amountReceived), 18)).toFixed(2)} USDC`,
-      status: "Received"
+      amount: `${parseFloat(
+        formatUnits(BigInt(stream.amountReceived), 18)
+      ).toFixed(2)} USDC`,
+      status: "Received",
     };
   });
 
@@ -159,6 +179,6 @@ export function useAwardeeStreams() {
     streams,
     scholarships,
     transactions,
-    isLoading: query.isLoading
+    isLoading: query.isLoading,
   };
-} 
+}

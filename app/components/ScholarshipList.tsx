@@ -15,6 +15,7 @@ interface FormattedScholarship {
   startTimestamp: string;
   lastWithdrawTimestamp: string;
   amountReceived: string;
+  payContractId: string;
 }
 
 interface ScholarshipListProps {
@@ -50,6 +51,8 @@ export function ScholarshipList({
           startTimestamp={scholarship.startTimestamp}
           lastWithdrawTimestamp={scholarship.lastWithdrawTimestamp}
           unclaimedAmount={scholarship.baseUnclaimedAmount}
+          payContractId={scholarship.payContractId}
+          payer={scholarship.payer}
         />
       ))}
     </div>
