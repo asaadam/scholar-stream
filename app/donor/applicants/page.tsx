@@ -1,45 +1,58 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useApplicationStore, ApplicationData } from "@/app/store/applicationStore"
-import { ArrowLeft, UserCheck } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AddAwardeeModal } from "@/components/AddAwardeeModal"
-import { useAccount } from "wagmi"
-import { useScholarshipStore, Scholarship } from "@/lib/store"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  useApplicationStore,
+  ApplicationData,
+} from "@/app/store/applicationStore";
+import { ArrowLeft, UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AddAwardeeModal } from "@/components/AddAwardeeModal";
+import { useAccount } from "wagmi";
+import { useScholarshipStore, Scholarship } from "@/lib/store";
 
 export default function ApplicantsPage() {
-  const [applications, setApplications] = useState<ApplicationData[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedApplicant, setSelectedApplicant] = useState<ApplicationData | null>(null)
-  const getApplications = useApplicationStore((state) => state.getApplications)
-  const { address } = useAccount()
-  const getScholarships = useScholarshipStore((state) => state.getScholarships)
-  
+  const [applications, setApplications] = useState<ApplicationData[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<ApplicationData | null>(null);
+  const getApplications = useApplicationStore((state) => state.getApplications);
+  const { address } = useAccount();
+  const getScholarships = useScholarshipStore((state) => state.getScholarships);
+
   // Load applications from store on component mount and filter by donor's scholarships
   useEffect(() => {
     if (address) {
       // Get all applications
       const allApplications = getApplications();
-      
+
       // Get scholarships owned by the donor
       const donorScholarships = getScholarships().filter(
         (scholarship: Scholarship) => scholarship.donorAddress === address
       );
-      
+
       // Get scholarship IDs owned by the donor
-      const donorScholarshipIds = donorScholarships.map((s: Scholarship) => s.id);
-      
+      const donorScholarshipIds = donorScholarships.map(
+        (s: Scholarship) => s.id
+      );
+
       // For demo purposes, if no scholarships are found, show all applications
       // In production, you'd want to be more restrictive
       if (donorScholarshipIds.length === 0) {
         setApplications(allApplications);
         return;
       }
-      
+
       // Filter applications by scholarshipId that matches donor's scholarships
       // Note: In our current implementation, applications don't have a direct link to scholarshipId
       // For demonstration, we're showing all applications
@@ -51,16 +64,16 @@ export default function ApplicantsPage() {
   }, [getApplications, getScholarships, address]);
 
   const handleApproveApplicant = (application: ApplicationData) => {
-    setSelectedApplicant(application)
-    setIsModalOpen(true)
-  }
+    setSelectedApplicant(application);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <Link href="/donor">
+            <Link href="/donor/manage-awardees">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
@@ -79,21 +92,25 @@ export default function ApplicantsPage() {
         {!address ? (
           <Card>
             <CardContent className="pt-6 pb-6 text-center">
-              <p className="mb-4">Please connect your wallet to view scholarship applications.</p>
+              <p className="mb-4">
+                Please connect your wallet to view scholarship applications.
+              </p>
             </CardContent>
           </Card>
         ) : applications.length === 0 ? (
           <Card>
             <CardContent className="pt-6 pb-6 text-center">
-              <p className="mb-4">No scholarship applications have been submitted yet.</p>
+              <p className="mb-4">
+                No scholarship applications have been submitted yet.
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-6">
             {applications.map((application, index) => (
-              <ApplicantCard 
-                key={index} 
-                application={application} 
+              <ApplicantCard
+                key={index}
+                application={application}
                 onApprove={() => handleApproveApplicant(application)}
               />
             ))}
@@ -115,22 +132,22 @@ export default function ApplicantsPage() {
         />
       )}
     </div>
-  )
+  );
 }
 
 interface ApplicantCardProps {
-  application: ApplicationData
-  onApprove: () => void
+  application: ApplicationData;
+  onApprove: () => void;
 }
 
 function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
-  const submittedDate = new Date(application.submittedAt)
-  const formattedDate = submittedDate.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-  const { address } = useAccount()
+  const submittedDate = new Date(application.submittedAt);
+  const formattedDate = submittedDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const { address } = useAccount();
 
   return (
     <Card>
@@ -139,10 +156,14 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
           <div>
             <CardTitle>{application.scholarshipTitle}</CardTitle>
             <CardDescription>
-              {application.personalInfo.firstName} {application.personalInfo.lastName} • {application.academicInfo.university}
+              {application.personalInfo.firstName}{" "}
+              {application.personalInfo.lastName} •{" "}
+              {application.academicInfo.university}
             </CardDescription>
           </div>
-          <Badge className="ml-auto" variant="outline">Pending Review</Badge>
+          <Badge className="ml-auto" variant="outline">
+            Pending Review
+          </Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -152,7 +173,8 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
             <ul className="space-y-1 text-sm">
               <li>
                 <span className="text-muted-foreground">Name:</span>{" "}
-                {application.personalInfo.firstName} {application.personalInfo.lastName}
+                {application.personalInfo.firstName}{" "}
+                {application.personalInfo.lastName}
               </li>
               <li>
                 <span className="text-muted-foreground">Email:</span>{" "}
@@ -160,7 +182,9 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
               </li>
               <li>
                 <span className="text-muted-foreground">Wallet:</span>{" "}
-                <span className="font-mono text-xs">{application.personalInfo.walletAddress}</span>
+                <span className="font-mono text-xs">
+                  {application.personalInfo.walletAddress}
+                </span>
               </li>
             </ul>
           </div>
@@ -186,12 +210,12 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
             </ul>
           </div>
         </div>
-        
+
         <div className="mt-4">
           <h3 className="font-medium mb-2">Statement of Purpose</h3>
           <p className="text-sm text-muted-foreground">
-            {application.statementOfPurpose.length > 200 
-              ? `${application.statementOfPurpose.substring(0, 200)}...` 
+            {application.statementOfPurpose.length > 200
+              ? `${application.statementOfPurpose.substring(0, 200)}...`
               : application.statementOfPurpose}
           </p>
         </div>
@@ -214,5 +238,5 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
         </div>
       </CardFooter>
     </Card>
-  )
-} 
+  );
+}

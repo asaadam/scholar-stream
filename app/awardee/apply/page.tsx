@@ -5,6 +5,8 @@ import Link from "next/link"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"
+import { useAccount } from "wagmi"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Scholarship, scholarships } from "../types"
 import { useApplicationStore, ApplicationData } from "@/app/store/applicationStore"
-import { useRouter } from "next/navigation"
 
 // Update the availableScholarships to use the imported scholarships
 const availableScholarships = scholarships;
@@ -25,6 +26,7 @@ export default function ApplyScholarship() {
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null)
   const [currentStep, setCurrentStep] = useState<"select" | "apply">("select")
   const router = useRouter()
+  const { address } = useAccount()
   
   // Form state
   const [firstName, setFirstName] = useState("")
@@ -62,6 +64,13 @@ export default function ApplyScholarship() {
       }
     }
   }, []);
+
+  // Use useEffect to get wallet address from connected account
+  useEffect(() => {
+    if (address) {
+      setWalletAddress(address)
+    }
+  }, [address])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -192,13 +201,13 @@ export default function ApplyScholarship() {
                       <Label htmlFor="wallet">Wallet Address</Label>
                       <Input 
                         id="wallet" 
-                        placeholder="Your wallet address (0x...)" 
+                        placeholder="Connect wallet to get address" 
                         required 
                         value={walletAddress}
-                        onChange={(e) => setWalletAddress(e.target.value)}
+                        disabled
                       />
                       <p className="text-xs text-muted-foreground">
-                        This is the wallet that will receive scholarship payments.
+                        This is the wallet that will receive scholarship payments. Connect your wallet to automatically set this value.
                       </p>
                     </div>
                   </div>
