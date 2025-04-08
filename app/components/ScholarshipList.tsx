@@ -12,6 +12,9 @@ interface FormattedScholarship {
   status: string;
   amountPerSec: number;
   baseUnclaimedAmount: number;
+  startTimestamp: string;
+  lastWithdrawTimestamp: string;
+  amountReceived: string;
 }
 
 interface ScholarshipListProps {
@@ -39,15 +42,14 @@ export function ScholarshipList({
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {scholarships.map((scholarship) => (
         <ScholarshipCard
-          unclaimedAmount={scholarship.unclaimedAmount}
           key={scholarship.id}
           name={scholarship.name}
           donor={scholarship.donor}
-          monthlyAmount={scholarship.monthlyAmount}
-          nextPayment={scholarship.nextPayment}
-          totalReceived={scholarship.totalReceived}
           amountPerSec={scholarship.amountPerSec}
-          baseUnclaimedAmount={scholarship.baseUnclaimedAmount}
+          totalReceived={scholarship.amountReceived || "0"}
+          startTimestamp={scholarship.startTimestamp}
+          lastWithdrawTimestamp={scholarship.lastWithdrawTimestamp}
+          unclaimedAmount={scholarship.baseUnclaimedAmount}
         />
       ))}
     </div>

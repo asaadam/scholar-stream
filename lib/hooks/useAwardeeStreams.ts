@@ -33,6 +33,9 @@ export interface FormattedScholarship {
   status: string;
   amountPerSec: number;
   baseUnclaimedAmount: number;
+  startTimestamp: string;
+  lastWithdrawTimestamp: string;
+  amountReceived: string;
 }
 
 export interface Transaction {
@@ -139,6 +142,9 @@ export function useAwardeeStreams() {
       status: stream.status,
       amountPerSec: amountPerSecond,
       baseUnclaimedAmount: stream.unclaimedAmount,
+      startTimestamp: stream.startTimestamp,
+      lastWithdrawTimestamp: stream.lastWithdrawTimestamp,
+      amountReceived: stream.amountReceived,
     };
   });
 

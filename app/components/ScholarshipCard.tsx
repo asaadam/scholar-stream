@@ -10,19 +10,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
 
 // Scholarship data type
 interface ScholarshipProps {
   id: number;
   name: string;
-  donor: string;
-  monthlyAmount: string;
-  nextPayment: string;
-  totalReceived: string;
-  unclaimedAmount: string; // Static value from API
-  status: string;
+  donor: string; // Keep formatted donor name
+  payer: string;
   amountPerSec: number;
-  baseUnclaimedAmount: number;
+  totalReceived: string; // Raw amount received as string
+  startTimestamp: string;
+  lastWithdrawTimestamp: string; 
+  unclaimedAmount: number; // Raw unclaimed amount
+  status: string;
 }
 
 // Helper function to calculate seconds elapsed
@@ -32,15 +33,35 @@ const calculateSecondsElapsed = (startTimeMs: number) =>
 export function ScholarshipCard({
   name,
   donor,
-  monthlyAmount,
-  nextPayment,
-  totalReceived,
-  unclaimedAmount,
   amountPerSec,
-  baseUnclaimedAmount,
-}: Omit<ScholarshipProps, "status" | "id">) {
+  totalReceived,
+  startTimestamp, 
+  lastWithdrawTimestamp,
+  unclaimedAmount,
+}: Omit<ScholarshipProps, "status" | "id" | "payer">) {
+  // Format monthly amount (30 days)
+  const monthlyAmount = amountPerSec * 60 * 60 * 24 * 30;
+  const formattedMonthlyAmount = `${parseFloat(formatUnits(BigInt(Math.floor(monthlyAmount)), 18)).toFixed(2)} USDC`;
+  
+  // Format total received
+  const formattedTotalReceived = `${parseFloat(formatUnits(BigInt(totalReceived), 18)).toFixed(2)} USDC`;
+  
+  // Calculate next payment date
+  const startDate = new Date(parseInt(startTimestamp) * 1000);
+  const lastWithdrawDate = lastWithdrawTimestamp ? 
+    new Date(parseInt(lastWithdrawTimestamp) * 1000) : startDate;
+  
+  // Next payment is 30 days from last withdraw
+  const nextPaymentDate = new Date(lastWithdrawDate);
+  nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+  
+  // Format next payment as relative time
+  const nextPayment = formatDistanceToNow(nextPaymentDate, { addSuffix: true });
+  
   // Track the display value for unclaimed amount
-  const [displayUnclaimed, setDisplayUnclaimed] = useState(unclaimedAmount);
+  const [displayUnclaimed, setDisplayUnclaimed] = useState(
+    `${parseFloat(formatUnits(BigInt(Math.floor(unclaimedAmount)), 18)).toFixed(4)} USDC`
+  );
 
   // Use a ref to track the mounting time to avoid recomputing elapsed time on re-renders
   const mountTimeRef = useRef(Date.now());
@@ -55,7 +76,7 @@ export function ScholarshipCard({
         const elapsedSeconds = calculateSecondsElapsed(mountTimeRef.current);
         // Use amount per second directly
         const additionalSinceMount = amountPerSec * elapsedSeconds;
-        const currentAmount = baseUnclaimedAmount + additionalSinceMount;
+        const currentAmount = unclaimedAmount + additionalSinceMount;
 
         // Format for display
         const formatted = `${parseFloat(
@@ -72,7 +93,7 @@ export function ScholarshipCard({
     return () => {
       clearTimeout(startDelay);
     };
-  }, [amountPerSec, baseUnclaimedAmount]);
+  }, [amountPerSec, unclaimedAmount]);
 
   return (
     <Card>
@@ -86,14 +107,14 @@ export function ScholarshipCard({
             <span className="text-sm text-muted-foreground">
               Monthly Amount:
             </span>
-            <span>{monthlyAmount}</span>
+            <span>{formattedMonthlyAmount}</span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">
               Total Received:
             </span>
-            <span>{totalReceived}</span>
+            <span>{formattedTotalReceived}</span>
           </div>
 
           <div className="flex justify-between">
