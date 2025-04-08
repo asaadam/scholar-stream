@@ -67,17 +67,14 @@ export function AddAwardeeModal({
   );
   const { refetch: refetchStreams } = useStreams();
 
-  // Fetch available pay contracts
   const { data: payContracts, isLoading: isLoadingContracts } =
     usePayContracts();
 
-  // Contract interaction
   const { writeContractAsync, data: writeContractData } = useWriteContract();
   const { status } = useWaitForTransactionReceipt({
     hash: writeContractData,
   });
 
-  // Read contract balance
   const { data: contractBalanceData, refetch: refetchBalance } =
     useReadContract({
       address: selectedContract?.id as `0x${string}` | undefined,
@@ -89,10 +86,8 @@ export function AddAwardeeModal({
       },
     });
 
-  // Formatted balance
   const [formattedBalance, setFormattedBalance] = useState("0");
 
-  // Set initial selected contract if tokenAddress and payContractAddress are provided
   useEffect(() => {
     if (open && tokenAddress && payContractAddress && payContracts.length > 0) {
       const contract = payContracts.find(
@@ -104,16 +99,13 @@ export function AddAwardeeModal({
       if (contract) {
         setSelectedContract(contract);
       } else if (!selectedContract && payContracts.length > 0) {
-        // Default to first contract if no match and nothing selected
         setSelectedContract(payContracts[0]);
       }
     } else if (open && payContracts.length > 0 && !selectedContract) {
-      // Default to first contract if none selected
       setSelectedContract(payContracts[0]);
     }
   }, [open, tokenAddress, payContractAddress, payContracts, selectedContract]);
 
-  // Reset form when closing
   useEffect(() => {
     if (!open) {
       setNewAwardeeWallet("");
@@ -124,7 +116,6 @@ export function AddAwardeeModal({
     }
   }, [open]);
 
-  // Format balance when contractBalanceData changes
   useEffect(() => {
     if (contractBalanceData && selectedContract) {
       const balance = contractBalanceData as bigint;
@@ -136,7 +127,6 @@ export function AddAwardeeModal({
     }
   }, [contractBalanceData, selectedContract]);
 
-  // Calculate amount per second based on input and time period
   useEffect(() => {
     if (!amount || isNaN(parseFloat(amount))) {
       setAmountPerSec("");
@@ -151,10 +141,10 @@ export function AddAwardeeModal({
         perSec = amountNum;
         break;
       case "month":
-        perSec = amountNum / (30 * 24 * 60 * 60); // month to seconds
+        perSec = amountNum / (30 * 24 * 60 * 60);
         break;
       case "year":
-        perSec = amountNum / (365 * 24 * 60 * 60); // year to seconds
+        perSec = amountNum / (365 * 24 * 60 * 60);
         break;
       default:
         perSec = 0;
@@ -163,22 +153,17 @@ export function AddAwardeeModal({
     setAmountPerSec(perSec.toString());
   }, [amount, timePeriod]);
 
-  // New effect to pre-populate fields from application data when a scholarshipId is provided
   useEffect(() => {
     if (open && scholarshipId) {
-      // Get applications from the store
       const getApplications = useApplicationStore.getState().getApplications;
       const applications = getApplications();
       
-      // Find the application with matching scholarshipId
       const application = applications.find(app => app.scholarshipId === scholarshipId);
       
       if (application) {
-        // Pre-populate fields from application data
         setNewAwardeeName(`${application.personalInfo.firstName} ${application.personalInfo.lastName}`);
         setNewAwardeeWallet(application.personalInfo.walletAddress);
         
-        // Set a default amount if needed (e.g., 100 tokens per month)
         if (!amount) {
           setAmount("100");
           setTimePeriod("month");

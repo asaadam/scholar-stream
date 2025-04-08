@@ -333,6 +333,28 @@ export default function CreateScholarship() {
                   </Button>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="time-period">Payment Schedule</Label>
+                  <div className="flex w-full items-center space-x-2">
+                    <Button
+                      type="button"
+                      onClick={() => setTimePeriod("month")}
+                      variant={timePeriod === "month" ? "default" : "outline"}
+                      className="flex-1"
+                    >
+                      Monthly
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setTimePeriod("year")}
+                      variant={timePeriod === "year" ? "default" : "outline"}
+                      className="flex-1"
+                    >
+                      Annual
+                    </Button>
+                  </div>
+                </div>
+
                 <p className="mt-2 text-sm text-muted-foreground">
                   Funds will be streamed continuously to awardees, calculated
                   per second based on this rate.

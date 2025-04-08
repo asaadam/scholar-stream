@@ -6,13 +6,13 @@ export interface Scholarship {
   name: string;
   description: string;
   amount: string;
-  tokenAddress: string; // Address of the token being used for payment
+  tokenAddress: string;
   tokenSymbol: string;
   duration: string;
   maxAwardees: string;
   streamRate: string;
   createdAt: number;
-  payContractAddress: string; // Address of the payment contract
+  payContractAddress: string;
   donorAddress?: string;
   isActive: boolean;
 }
@@ -55,13 +55,24 @@ interface AwardeeState {
 }
 
 export interface Stream {
-  awardee: string;
-  status: "Active" | "Paused";
+  id: string;
+  sender: string;
+  recipient: string;
+  startTime: number;
+  endTime: number | null;
+  lastWithdrawTime: number;
   amountPerSec: string;
-  name: string;
-  amountReceived?: string;
+  tokenAddress: string;
+  payContractAddress: string;
+  scholarshipId: string;
+  withdrawnAmount?: string;
+  remainingAmount?: string;
+  awardee: string;
   startTimestamp: string;
-  lastWithdrawTimestamp: string;
+  lastWithdrawTimestamp: number;
+  amountReceived: string;
+  status: "Active" | "Paused";
+  name: string;
 }
 
 export interface StreamsState {

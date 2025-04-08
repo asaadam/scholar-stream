@@ -4,19 +4,18 @@ import { formatEther } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 
 export type TokenInfo = {
-  id: string; // token address
+  id: string;
   name: string;
   symbol: string;
   decimals: number;
 };
 
 export type PayContract = {
-  id: string; // pay contract address
+  id: string;
   token: TokenInfo;
   balance?: string;
 };
 
-// Add interface for the GraphQL response
 interface PayContractItem {
   id: string;
   token: {
@@ -27,7 +26,6 @@ interface PayContractItem {
   };
 }
 
-// Separate fetch function for better reusability
 const fetchPayContracts = async () => {
   try {
     const subgraphUrl = process.env.NEXT_PUBLIC_SUBGRAPH_URL;
@@ -61,7 +59,6 @@ const fetchPayContracts = async () => {
       throw new Error(data.errors[0].message);
     }
 
-    // Create a Set to track unique token IDs
     const uniqueTokenIds = new Set<string>();
     return data.data.payContracts.items
       .filter((item: PayContractItem) => {
@@ -93,7 +90,6 @@ export function usePayContracts() {
   });
 }
 
-// Add new hook for getting contract balances
 export function usePayContractBalances() {
   const { data: payContracts, isLoading: isLoadingContracts } =
     usePayContracts();

@@ -5,7 +5,10 @@ import { formatUnits } from "viem";
 import { formatDistanceToNow } from "date-fns";
 
 interface Stream {
+  id?: string;
+  name?: string;
   payer: string;
+  awardee?: string;
   status: "Active" | "Paused";
   amountPerSec: string;
   amountReceived: string;
@@ -90,7 +93,6 @@ export function useAwardeeStreams() {
     enabled: !!address,
   });
 
-  // Calculate the unclaimed amount for each stream
   const streams = query.data?.data?.streams?.items.map((stream) => {
     const totalAmount = calculateStreamAmount({
       startTimestamp: stream.startTimestamp,
@@ -107,27 +109,21 @@ export function useAwardeeStreams() {
     };
   }) || [];
 
-  // Format streams into scholarships for UI display
   const scholarships: FormattedScholarship[] = streams.map((stream, index) => {
-    // Calculate monthly amount (30 days)
     const amountPerSecond = parseFloat(stream.amountPerSec);
     const monthlyAmount = amountPerSecond * 60 * 60 * 24 * 30;
     
-    // Format amounts with 18 decimals for USDC
     const formattedMonthlyAmount = `${parseFloat(formatUnits(BigInt(Math.floor(monthlyAmount)), 18)).toFixed(2)} USDC`;
     const formattedTotalReceived = `${parseFloat(formatUnits(BigInt(stream.amountReceived), 18)).toFixed(2)} USDC`;
     const formattedUnclaimed = `${parseFloat(formatUnits(BigInt(Math.floor(stream.unclaimedAmount)), 18)).toFixed(4)} USDC`;
     
-    // Get next payment date (withdraw happens every 30 days from start)
     const startDate = new Date(parseInt(stream.startTimestamp) * 1000);
     const lastWithdrawDate = stream.lastWithdrawTimestamp ? 
       new Date(parseInt(stream.lastWithdrawTimestamp) * 1000) : startDate;
     
-    // Next payment is 30 days from last withdraw
     const nextPaymentDate = new Date(lastWithdrawDate);
     nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
     
-    // Format next payment as relative time
     const nextPayment = formatDistanceToNow(nextPaymentDate, { addSuffix: true });
     
     return {
@@ -148,7 +144,6 @@ export function useAwardeeStreams() {
     };
   });
 
-  // Format transactions data
   const transactions: Transaction[] = streams.map((stream) => {
     const startDate = new Date(parseInt(stream.startTimestamp) * 1000);
     return {

@@ -12,6 +12,14 @@ export interface YieldSimulation {
   walletAddress?: string;
 }
 
+export interface YieldData {
+  assetName: string;
+  protocolName: string;
+  principalAmount: number;
+  apy: number;
+  duration: string;
+}
+
 interface YieldState {
   simulations: YieldSimulation[];
   currentSimulation: YieldSimulation | null;
