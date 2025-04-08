@@ -1,6 +1,6 @@
 import payContractAbi from "@/abi/payContract.json";
 import { useQuery } from "@tanstack/react-query";
-import { formatEther } from "viem";
+import { formatUnits } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 
 export type TokenInfo = {
@@ -100,7 +100,7 @@ export function usePayContractBalances() {
     contracts: contracts.map((contract: PayContract) => ({
       address: contract.id as `0x${string}`,
       abi: payContractAbi,
-      functionName: "balances",
+      functionName: "effectiveBalance",
       args: [address as `0x${string}`],
     })),
   });
@@ -110,7 +110,7 @@ export function usePayContractBalances() {
       const balance = balances?.[index];
       const formattedBalance =
         balance?.status === "success" && balance.result
-          ? formatEther(balance.result as bigint)
+          ? formatUnits(balance.result as bigint, contract.token.decimals)
           : "0";
 
       return {

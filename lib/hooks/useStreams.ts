@@ -53,7 +53,6 @@ export function useStreams() {
   const { address } = useAccount();
   const queryClient = useQueryClient();
   const { getStreams, addStream, updateStream } = useStreamsStore();
-
   const query = useQuery<StreamsResponse>({
     queryKey: ["streams", address],
     queryFn: async () => {
@@ -78,6 +77,7 @@ export function useStreams() {
     },
     enabled: !!address,
   });
+
   // Handle store updates in a separate effect
   useEffect(() => {
     if (query.data?.data?.streams?.items && address) {
@@ -91,7 +91,7 @@ export function useStreams() {
             amountPerSec: stream.amountPerSec,
             amountReceived: stream.amountReceived,
             startTimestamp: stream.startTimestamp,
-            lastWithdrawTimestamp: stream.lastWithdrawTimestamp,
+            lastWithdrawTimestamp: parseInt(stream.lastWithdrawTimestamp),
           });
         } else {
           addStream(address, {

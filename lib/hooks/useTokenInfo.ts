@@ -52,21 +52,21 @@ export function useTokenInfo(
   // Update token info when data changes
   useEffect(() => {
     const newInfo: TokenInfo = { ...tokenInfo };
-    
+
     if (symbolData !== undefined) {
       newInfo.symbol = symbolData as string;
     }
-    
+
     if (decimalsData !== undefined) {
       newInfo.decimals = Number(decimalsData);
     }
-    
+
     if (balanceData !== undefined) {
       const balance = balanceData as bigint;
       newInfo.balance = balance.toString();
       newInfo.formattedBalance = formatUnits(balance, newInfo.decimals);
     }
-    
+
     setTokenInfo(newInfo);
   }, [symbolData, decimalsData, balanceData]);
 
@@ -91,4 +91,4 @@ export function useTokenInfo(
     formatAmount,
     parseAmount,
   };
-} 
+}

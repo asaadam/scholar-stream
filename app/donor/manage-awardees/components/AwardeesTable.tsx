@@ -50,7 +50,6 @@ function StreamRow({
 
   useEffect(() => {
     if (stream.status.toLowerCase() !== "active") return;
-
     const interval = setInterval(() => {
       setCurrentAmount((prev) => {
         const amountPerMs = calculateAmountPerMs(stream.amountPerSec);
@@ -147,7 +146,6 @@ export function AwardeesTable({
   tokenDecimals,
 }: AwardeesTableProps) {
   const { isLoading, error, data: streams } = useStreams();
-
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading awardees</div>;
   if (!streams || streams.data.streams.items.length === 0) {

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { erc20Abi } from "viem";
 import { useWriteContract } from "wagmi";
 
+import payContractAbi from "@/abi/payContract.json";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,9 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUserTokenBalance } from "@/lib/hooks/useUserTokenBalance";
+import { useGetVaults, Vault } from "@/lib/hooks/useGetVaults";
 import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
-import payContractAbi from "@/abi/payContract.json";
+import { useUserTokenBalance } from "@/lib/hooks/useUserTokenBalance";
+import { Slider } from "./ui/slider";
 
 interface DepositModalProps {
   open: boolean;
@@ -46,6 +48,19 @@ export function DepositModal({
   const [selectedContract, setSelectedContract] = useState<PayContract | null>(
     null
   );
+  const [sliderValue, setSliderValue] = useState(0);
+  const [selectedVault, setSelectedVault] = useState<Vault | null>(null);
+
+  const { vaultData, isLoadingVault } = useGetVaults(selectedContract);
+
+  useEffect(() => {
+    // Set the vault when vault data is fetched
+    if (vaultData?.data?.payContract?.vault) {
+      setSelectedVault(vaultData.data.payContract.vault);
+    } else {
+      setSelectedVault(null);
+    }
+  }, [vaultData]);
 
   // Fetch available pay contracts
   const { data: payContracts, isLoading: isLoadingContracts } =
@@ -132,7 +147,7 @@ export function DepositModal({
         address: selectedContract.id as `0x${string}`,
         abi: payContractAbi,
         functionName: "deposit",
-        args: [parseAmount(amount)],
+        args: [parseAmount(amount), sliderValue],
       });
 
       // Reset form
@@ -241,6 +256,58 @@ export function DepositModal({
                   >
                     Max
                   </Button>
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-between">
+                <Label htmlFor="slider">
+                  Percentage amount to vaults {sliderValue}%
+                </Label>
+                <Slider
+                  className="my-4"
+                  min={0}
+                  max={100}
+                  value={[sliderValue]}
+                  onValueChange={(value) => setSliderValue(value[0])}
+                />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      {isLoadingVault ? (
+                        <div className="text-sm text-muted-foreground">
+                          Loading vault...
+                        </div>
+                      ) : selectedVault ? (
+                        <div className="p-2  rounded-md">
+                          <div className="font-medium">
+                            {selectedVault.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {selectedVault.symbol} (
+                            {selectedVault.id.slice(0, 6)}...
+                            {selectedVault.id.slice(-4)})
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            APY: 7%
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <span> Expected Return: </span>
+                            <span>
+                              {(
+                                parseFloat(amount) *
+                                (sliderValue / 100) *
+                                0.07
+                              ).toFixed(2)}{" "}
+                              {selectedContract.token.symbol}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          No vault found for this contract
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 

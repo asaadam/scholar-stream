@@ -34,10 +34,11 @@ import {
 import { HelpCircle } from "lucide-react";
 
 import payContractAbi from "@/abi/payContract.json";
-import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
-import { formatUnits, parseUnits } from "viem";
-import { useStreams } from "@/lib/hooks/useStreams";
 import { useApplicationStore } from "@/app/store/applicationStore";
+import { Vault, useGetVaults } from "@/lib/hooks/useGetVaults";
+import { PayContract, usePayContracts } from "@/lib/hooks/usePayContracts";
+import { useStreams } from "@/lib/hooks/useStreams";
+import { formatUnits, parseUnits } from "viem";
 
 interface AddAwardeeModalProps {
   open: boolean;
@@ -65,6 +66,7 @@ export function AddAwardeeModal({
   const [selectedContract, setSelectedContract] = useState<PayContract | null>(
     null
   );
+  const [selectedVault, setSelectedVault] = useState<Vault | null>(null);
   const { refetch: refetchStreams } = useStreams();
 
   const { data: payContracts, isLoading: isLoadingContracts } =
@@ -88,7 +90,19 @@ export function AddAwardeeModal({
 
   const [formattedBalance, setFormattedBalance] = useState("0");
 
+  const { vaultData, isLoadingVault } = useGetVaults(selectedContract);
+
   useEffect(() => {
+    // Set the vault when vault data is fetched
+    if (vaultData?.data?.payContract?.vault) {
+      setSelectedVault(vaultData.data.payContract.vault);
+    } else {
+      setSelectedVault(null);
+    }
+  }, [vaultData]);
+
+  useEffect(() => {
+    if (isLoadingContracts) return;
     if (open && tokenAddress && payContractAddress && payContracts.length > 0) {
       const contract = payContracts.find(
         (c: PayContract) =>
@@ -104,7 +118,14 @@ export function AddAwardeeModal({
     } else if (open && payContracts.length > 0 && !selectedContract) {
       setSelectedContract(payContracts[0]);
     }
-  }, [open, tokenAddress, payContractAddress, payContracts, selectedContract]);
+  }, [
+    open,
+    tokenAddress,
+    payContractAddress,
+    payContracts,
+    selectedContract,
+    isLoadingContracts,
+  ]);
 
   useEffect(() => {
     if (!open) {
@@ -113,6 +134,7 @@ export function AddAwardeeModal({
       setAmount("");
       setTimePeriod("month");
       setAmountPerSec("");
+      setSelectedVault(null);
     }
   }, [open]);
 
@@ -157,13 +179,17 @@ export function AddAwardeeModal({
     if (open && scholarshipId) {
       const getApplications = useApplicationStore.getState().getApplications;
       const applications = getApplications();
-      
-      const application = applications.find(app => app.scholarshipId === scholarshipId);
-      
+
+      const application = applications.find(
+        (app) => app.scholarshipId === scholarshipId
+      );
+
       if (application) {
-        setNewAwardeeName(`${application.personalInfo.firstName} ${application.personalInfo.lastName}`);
+        setNewAwardeeName(
+          `${application.personalInfo.firstName} ${application.personalInfo.lastName}`
+        );
         setNewAwardeeWallet(application.personalInfo.walletAddress);
-        
+
         if (!amount) {
           setAmount("100");
           setTimePeriod("month");
@@ -187,6 +213,7 @@ export function AddAwardeeModal({
       setSelectedContract(contract);
       setAmount("");
       setAmountPerSec("");
+      setSelectedVault(null); // Reset selected vault when contract changes
     }
   };
 
@@ -357,12 +384,61 @@ export function AddAwardeeModal({
                 </Tooltip>
               </TooltipProvider>
             </div>
+
             {formattedBalance && (
               <div className="text-xs text-muted-foreground mt-1">
                 Available Balance: {parseFloat(formattedBalance).toFixed(4)}{" "}
                 {selectedContract?.token.symbol}
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vault">Vault</Label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                {isLoadingVault ? (
+                  <div className="text-sm text-muted-foreground">
+                    Loading vault...
+                  </div>
+                ) : selectedVault ? (
+                  <div className="p-2 border rounded-md">
+                    <div className="font-medium">{selectedVault.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedVault.symbol} ({selectedVault.id.slice(0, 6)}...
+                      {selectedVault.id.slice(-4)})
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    No vault found for this contract
+                  </div>
+                )}
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-80">
+                      {selectedVault ? (
+                        <>
+                          Vault: {selectedVault.name} ({selectedVault.symbol})
+                          <br />
+                          Vault Address: {selectedVault.id.slice(0, 6)}...
+                          {selectedVault.id.slice(-4)}
+                          <br />
+                          Decimals: {selectedVault.decimals}
+                        </>
+                      ) : (
+                        "No vault information available"
+                      )}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
 
           <div className="flex gap-4">
@@ -423,7 +499,9 @@ export function AddAwardeeModal({
             </Button>
           ) : (
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Connect your wallet to add awardees</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Connect your wallet to add awardees
+              </p>
               <Button disabled>Add Awardee</Button>
             </div>
           )}

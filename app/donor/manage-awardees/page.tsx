@@ -38,9 +38,9 @@ export default function ManageAwardees() {
     amount: "10000",
     duration: "12",
     maxAwardees: "10",
-    tokenAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // Example USDC on Polygon
+    tokenAddress: "0x0106A92F187fEC646A95EEd59c18B7320035Abc0",
     tokenSymbol: "USDC",
-    payContractAddress: "0x1234567890123456789012345678901234567890", // Example address
+    payContractAddress: "0x7B1400DeA052960aa50bF6Cc880bc6d56f177287",
     createdAt: new Date().getTime(),
     streamRate: "0.1", // Added missing required property
     isActive: true, // Added missing required property
@@ -58,10 +58,6 @@ export default function ManageAwardees() {
   const { writeContractAsync } = useWriteContract();
 
   // Use our custom hook to get token info
-  const { tokenInfo, refetchBalance, parseAmount } = useTokenInfo(
-    scholarship.tokenAddress as `0x${string}`,
-    scholarship.payContractAddress as `0x${string}`
-  );
 
   // Add state for deposit modal
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -72,6 +68,11 @@ export default function ManageAwardees() {
   const currentPayContract = payContracts?.find(
     (contract: PayContract) =>
       contract.id.toLowerCase() === scholarship.payContractAddress.toLowerCase()
+  );
+
+  const { tokenInfo, refetchBalance, parseAmount } = useTokenInfo(
+    currentPayContract?.token.id as `0x${string}`,
+    currentPayContract?.payContractAddress as `0x${string}`
   );
 
   // If we found the contract in our GraphQL data, use that token info
@@ -226,7 +227,7 @@ export default function ManageAwardees() {
             onToggleStatus={toggleAwardeeStatus}
             onRemove={removeAwardee}
             formatAmountDisplay={formatAmountDisplay}
-            tokenDecimals={tokenInfo.decimals || tokenDetails?.decimals || 18}
+            tokenDecimals={tokenInfo.decimals || tokenDetails?.decimals || 6}
           />
 
           {/* Add AddAwardeeModal */}

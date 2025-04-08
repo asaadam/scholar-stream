@@ -20,10 +20,13 @@ import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 export function PayContracts() {
   const { data: payContracts, isLoading } = usePayContractBalances();
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-  const [selectedContract, setSelectedContract] = useState<PayContract | null>(null);
+  const [selectedContract, setSelectedContract] = useState<PayContract | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { writeContract: withdrawPayer, data: withdrawData } = useWriteContract();
+  const { writeContract: withdrawPayer, data: withdrawData } =
+    useWriteContract();
 
   const { isLoading: isWithdrawing, isSuccess } = useWaitForTransactionReceipt({
     hash: withdrawData,
@@ -39,9 +42,9 @@ export function PayContracts() {
 
   const handleWithdraw = async () => {
     if (!selectedContract) return;
-    
+
     try {
-      const decimals = selectedContract.token.decimals ?? 18;
+      const decimals = 6;
       const parsedAmount = parseUnits(withdrawAmount, decimals);
 
       withdrawPayer({
