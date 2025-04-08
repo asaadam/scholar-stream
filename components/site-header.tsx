@@ -44,6 +44,19 @@ export function SiteHeader() {
               <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary mx-1" />
             )}
           </Link>
+          <Link 
+            href="/simulate-yield" 
+            className={`relative text-sm font-medium px-3 py-2 rounded-md transition-all ${
+              pathname === "/simulate-yield"
+                ? "text-white bg-primary shadow-md"
+                : "text-muted-foreground hover:text-primary hover:bg-muted/50"
+            }`}
+          >
+            Simulate Yield
+            {pathname === "/simulate-yield" && (
+              <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary mx-1" />
+            )}
+          </Link>
           <ConnectKitButton />
         </nav>
       </div>
