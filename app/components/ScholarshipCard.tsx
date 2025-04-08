@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { calculateAmountPerMs } from "@/lib/utils/streamCalculations";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
@@ -68,7 +67,7 @@ function UnclaimedAmount({
       <span className="text-sm text-muted-foreground">Unclaimed Amount:</span>
       <span className="text-green-500 font-semibold">
         {`${parseFloat(
-          formatUnits(BigInt(Math.floor(unclaimedTotal)), 18)
+          formatUnits(BigInt(Math.floor(unclaimedTotal)), 6)
         ).toFixed(5)} USDC`}
       </span>
     </div>
@@ -96,11 +95,11 @@ export function ScholarshipCard({
 
   const monthlyAmount = amountPerSec * 60 * 60 * 24 * 30;
   const formattedMonthlyAmount = `${parseFloat(
-    formatUnits(BigInt(Math.floor(monthlyAmount)), 18)
+    formatUnits(BigInt(Math.floor(monthlyAmount)), 6)
   ).toFixed(2)} USDC`;
 
   const formattedTotalReceived = `${parseFloat(
-    formatUnits(BigInt(totalReceived), 18)
+    formatUnits(BigInt(totalReceived), 6)
   ).toFixed(2)} USDC`;
 
   const startDate = new Date(parseInt(startTimestamp) * 1000);
@@ -110,8 +109,6 @@ export function ScholarshipCard({
 
   const nextPaymentDate = new Date(lastWithdrawDate);
   nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
-
-  const nextPayment = formatDistanceToNow(nextPaymentDate, { addSuffix: true });
 
   useEffect(() => {
     if (isSuccess) {

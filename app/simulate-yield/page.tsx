@@ -12,27 +12,10 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
+import { yieldVaultAbi } from "../../abi/yieldVaultAbi";
+import { formatUnits, parseUnits } from "viem";
 
-// Mock contract ABI for demonstration
-const mockYieldVaultAbi = [
-  {
-    inputs: [],
-    name: "totalUnderlying",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
-    name: "simulateYield",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
-
-// Mock contract address - replace with your actual contract address
-const MOCK_YIELD_VAULT_ADDRESS = "0xYourContractAddressHere";
+const MOCK_YIELD_VAULT_ADDRESS = "0xeeb8c67c3dffcf820639e9522a9efaf7c0692122";
 
 export default function SimulateYield() {
   const account = useAccount();
@@ -43,7 +26,7 @@ export default function SimulateYield() {
   const { data: totalUnderlying, refetch: refetchTotalUnderlying } =
     useReadContract({
       address: MOCK_YIELD_VAULT_ADDRESS,
-      abi: mockYieldVaultAbi,
+      abi: yieldVaultAbi,
       functionName: "totalUnderlying",
       query: {
         enabled: !!account.address,
@@ -85,9 +68,9 @@ export default function SimulateYield() {
 
       await writeContractAsync({
         address: MOCK_YIELD_VAULT_ADDRESS,
-        abi: mockYieldVaultAbi,
+        abi: yieldVaultAbi,
         functionName: "simulateYield",
-        args: [amount],
+        args: [parseUnits(amount, 6)],
       });
     } catch (error) {
       console.error("Error simulating yield:", error);
@@ -97,7 +80,7 @@ export default function SimulateYield() {
   };
 
   const formattedTotalUnderlying = totalUnderlying
-    ? totalUnderlying.toString()
+    ? formatUnits(totalUnderlying, 6)
     : "0.00";
 
   return (

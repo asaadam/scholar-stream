@@ -21,13 +21,13 @@ export interface Transaction {
 
 export function useTransactionData(streams: StreamData[] | null) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
+
   useEffect(() => {
     if (!streams || streams.length === 0) {
       setTransactions([]);
       return;
     }
-    
+
     // Format transactions
     const txs: Transaction[] = [];
     for (const stream of streams) {
@@ -36,13 +36,15 @@ export function useTransactionData(streams: StreamData[] | null) {
       txs.push({
         date: startDate.toLocaleDateString(),
         scholarship: `Scholarship from ${stream.payer.slice(0, 6)}...`,
-        amount: `${parseFloat(formatUnits(BigInt(stream.amountReceived), 18)).toFixed(2)} USDC`,
-        status: "Received"
+        amount: `${parseFloat(
+          formatUnits(BigInt(stream.amountReceived), 6)
+        ).toFixed(2)} USDC`,
+        status: "Received",
       });
     }
-    
+
     setTransactions(txs);
   }, [streams]);
-  
+
   return { transactions };
-} 
+}
