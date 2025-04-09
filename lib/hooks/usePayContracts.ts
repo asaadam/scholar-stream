@@ -37,7 +37,10 @@ const fetchPayContracts = async () => {
       body: JSON.stringify({
         query: `
         query GetScholarships {
-          payContracts {
+          payContracts( 
+            orderBy: "createdAtTimestamp",
+            limit: 1
+          ) {
             items {
               token {
                 id
@@ -54,7 +57,7 @@ const fetchPayContracts = async () => {
     });
 
     const data = await response.json();
-
+    console.log(data);
     if (data.errors) {
       throw new Error(data.errors[0].message);
     }

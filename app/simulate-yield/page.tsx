@@ -15,7 +15,7 @@ import {
 import { yieldVaultAbi } from "../../abi/yieldVaultAbi";
 import { formatUnits, parseUnits } from "viem";
 
-const MOCK_YIELD_VAULT_ADDRESS = "0xeeb8c67c3dffcf820639e9522a9efaf7c0692122";
+const MOCK_YIELD_VAULT_ADDRESS = "0xFAC6C7325a7BbA0F986b56b33313Ed9D0Fb224D5";
 
 export default function SimulateYield() {
   const account = useAccount();

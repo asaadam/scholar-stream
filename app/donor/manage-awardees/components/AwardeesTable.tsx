@@ -143,7 +143,6 @@ export function AwardeesTable({
   onToggleStatus,
   onRemove,
   formatAmountDisplay,
-  tokenDecimals,
 }: AwardeesTableProps) {
   const { isLoading, error, data: streams } = useStreams();
   if (isLoading) return <div>Loading...</div>;
@@ -183,7 +182,7 @@ export function AwardeesTable({
             onToggleStatus={onToggleStatus}
             onRemove={onRemove}
             formatAmountDisplay={formatAmountDisplay}
-            tokenDecimals={tokenDecimals}
+            tokenDecimals={6}
           />
         ))}
       </TableBody>

@@ -183,7 +183,7 @@ export default function ManageAwardees() {
   const formatAmountDisplay = (awardee: Awardee) => {
     const amountPerSec = parseFloat(awardee.amountPerSec);
     const amountPerMonth = amountPerSec * 30 * 24 * 60 * 60;
-    const decimals = tokenInfo.decimals || tokenDetails?.decimals || 18;
+    const decimals = 6;
     return `${(amountPerMonth / Math.pow(10, decimals)).toFixed(2)} ${
       tokenInfo.symbol ||
       tokenDetails?.symbol ||
