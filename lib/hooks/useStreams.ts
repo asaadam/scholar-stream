@@ -94,6 +94,7 @@ export function useStreams() {
             lastWithdrawTimestamp: parseInt(stream.lastWithdrawTimestamp),
           });
         } else {
+          // @ts-expect-error - TODO: fix this
           addStream(address, {
             ...stream,
             name: "Unknown Awardee",
@@ -120,6 +121,7 @@ export function useStreams() {
       },
     };
 
+    // @ts-expect-error - TODO: fix this
     addStream(address, stream);
 
     queryClient.setQueryData<StreamsResponse>(

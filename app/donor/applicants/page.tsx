@@ -186,6 +186,10 @@ function ApplicantCard({ application, onApprove }: ApplicantCardProps) {
                   {application.personalInfo.walletAddress}
                 </span>
               </li>
+              <li>
+                <span className="text-muted-foreground">Open Campus Id:</span>{" "}
+                {"adam.edu"}
+              </li>
             </ul>
           </div>
           <div>
