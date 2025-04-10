@@ -169,18 +169,6 @@ export default function ScholarStreamLanding() {
         </div>
       </section>
 
-      <section className="py-20 bg-slate-50 px-4">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-10 text-slate-800">
-          Built With EduChain at Its Core
-        </h2>
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
-          <p>✅ ERC-4626 yield vaults for regenerative finance</p>
-          <p>✅ Solidity contracts deployed on EduChain</p>
-          <p>✅ On-chain event indexing with Ponder</p>
-          <p>✅ Next.js Web3 frontend with live data feed</p>
-        </div>
-      </section>
-
       <section className="py-20 bg-white px-4">
         <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-10 text-slate-800">
           Integration Partners
@@ -196,6 +184,46 @@ export default function ScholarStreamLanding() {
           ))}
         </div>
       </section>
+      <footer className="bg-slate-100 text-slate-600 text-sm py-10 px-4 mt-10">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 text-center sm:text-left">
+          <div className="flex flex-col sm:items-start">
+            <img src="https://media.discordapp.net/attachments/1344978138781974559/1359423115167400008/ChatGPT_Image_Apr_9_2025_02_01_49_PM.png?ex=67f8be6f&is=67f76cef&hm=eea93cd618e4551f26a8be0c79de125d890c1a7a96e440dca70cb6656c5cce16&=&format=webp&quality=lossless&width=1652&height=1652" alt="ScholarStream Logo" className="max-w-[120px] h-auto mb-2" /> {/* Update path as needed */}
+            <h1 className="text-2xl font-bold text-slate-800 mb-1">ScholarStream</h1>
+            <p className="text-slate-500 max-w-xs">
+              Real-time, yield-powered scholarships on EduChain. Empowering learners, globally.
+            </p>
+          </div>
+      
+          {/* Social Links */}
+          <div className="flex space-x-6">
+            <a
+              href="https://x.com/scholarstreamfi" // Replace with your X handle
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition"
+              aria-label="X (Twitter)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-5 h-5" viewBox="0 0 24 24">
+                <path d="M22.97 2H19.5l-5.8 7.07L7.65 2H1l8.62 11.06L1.61 22h3.52l6.27-7.65L16.83 22H23l-9.13-11.77L22.97 2z" />
+              </svg>
+            </a>
+            <a
+              href="https://github.com/scholarstream" // Replace with your GitHub repo
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition"
+              aria-label="GitHub"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-5 h-5" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577v-2.234c-3.338.727-4.033-1.61-4.033-1.61C4.422 17.07 3.633 16.7 3.633 16.7c-1.087-.744.083-.729.083-.729 1.205.085 1.838 1.237 1.838 1.237 1.07 1.834 2.809 1.304 3.495.997.108-.776.418-1.304.762-1.604-2.665-.305-5.466-1.332-5.466-5.932 0-1.31.47-2.38 1.236-3.22-.124-.304-.536-1.526.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 0 1 3.003-.404c1.02.004 2.045.137 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.655 1.65.243 2.872.12 3.176.77.84 1.234 1.91 1.234 3.22 0 4.61-2.805 5.624-5.476 5.92.43.37.823 1.102.823 2.222v3.293c0 .32.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div className="mt-8 text-center text-slate-400 text-xs">
+          © {new Date().getFullYear()} ScholarStream. All rights reserved.
+        </div>
+      </footer>
     </main>
   )
 }
